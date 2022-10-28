@@ -1,7 +1,5 @@
-#include  <stdint.h>
-#include <stdio.h>
-#include "struct_image.h"
-#include <stdlib.h>
+#include "bmp.h"
+
 #pragma pack(push, 1)
 struct bmp_header
 {
@@ -37,40 +35,21 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     if (count != sizeof(struct bmp_header)){
         return READ_INVALID_HEADER;
     }
-    /*
-    printf("%u\n", (uint16_t)bh.bfType);
-    printf("%u\n", (uint32_t)bh.bfileSize);
-    printf("%u\n", (uint32_t)bh.bfReserved);
-    printf("%u\n", (uint32_t)bh.bOffBits);
-    printf("%u\n", (uint32_t)bh.biSize);
-    printf("%u\n", (uint32_t)bh.biWidth);
-    printf("%u\n", (uint32_t)bh.biHeight);
-    printf("%u\n", (uint16_t)bh.biPlanes);
-    printf("%u\n", (uint16_t)bh.biBitCount);
-    printf("%u\n", (uint32_t)bh.biCompression);
-    printf("%u\n", (uint32_t)bh.biSizeImage);
-    printf("%u\n", (uint32_t)bh.biXPelsPerMeter);
-    printf("%u\n", (uint32_t)bh.biYPelsPerMeter);
-    printf("%u\n", (uint32_t)bh.biClrUsed);
-    printf("%u\n", (uint32_t)bh.biClrImportant);*/
-    /*if (bh.bfType != 0xD4D2 || bh.bfReserved != 0){
-        return READ_INVALID_SIGNATURE;
-    }*/
     struct image image = create();
     image.height = bh.biHeight;
     image.width = bh.biWidth;
-    image.data = malloc(sizeof(struct pixel*) * bh.biHeight * bh.biWidth);
+    image.data = malloc(sizeof(struct pixel) * bh.biHeight * bh.biWidth);
     //int fs = fseek(in, bh.bOffBits, 0);
     int countRow = 0;
     int tmpwidth = image.width;
     int offset = 0;
     if ((tmpwidth * sizeof(struct pixel)) % 4 != 0){
-        int needwidth = tmpwidth * sizeof(struct pixel);
+        int needwidth = (int) tmpwidth * sizeof(struct pixel);
         while (needwidth % 4 != 0){
             needwidth++;
         }
 
-        offset = needwidth - tmpwidth * sizeof(struct pixel);
+        offset = needwidth - (int) tmpwidth * sizeof(struct pixel);
 
     }
     while (countRow < image.height){
@@ -92,12 +71,12 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     return READ_OK;
 
 }
-struct image readfile(const char* fileName){
+struct image* readfile(const char* fileName){
     FILE* file = fopen(fileName, "rb");
     if (!file){
         printf("File doesn't read\n");
-        struct image image;
-        return image;
+        exit(1);
+        return NULL;
     }
     struct image image = create();
     enum read_status rstatus = from_bmp(file, &image);
@@ -120,7 +99,7 @@ struct image readfile(const char* fileName){
         }
     }
     fclose(file);
-    return image;
+    return &image;
 }
 /*  serializer   */
 enum  write_status  {
@@ -135,14 +114,14 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
     int tmpwidth = image.width;
     int padding = 0;
     if ((tmpwidth  * sizeof(struct pixel)) % 4 != 0){
-        int needwidth = tmpwidth * sizeof(struct pixel);
+        int needwidth = (int) tmpwidth * sizeof(struct pixel);
         while (needwidth % 4 != 0){
             needwidth++;
         }
-        padding = needwidth - tmpwidth * sizeof(struct pixel);
+        padding = needwidth - (int) tmpwidth * sizeof(struct pixel);
     }
-    int pixels_size = (image.width * sizeof(struct pixel) + padding)*image.height;
-    int file_size = sizeof(struct bmp_header) + pixels_size;
+    int pixels_size = ((int) image.width * sizeof(struct pixel) + padding)*(int)image.height;
+    int file_size = (int) sizeof(struct bmp_header) + pixels_size;
     bh.bfType = 19778;
     bh.bfileSize = file_size;
     bh.bfReserved = 0;
@@ -158,24 +137,6 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
     bh.biYPelsPerMeter = 0;
     bh.biClrUsed = 0;
     bh.biClrImportant = 0;
-    /*
-    printf("%u\n", (uint16_t)bh.bfType);
-    printf("%u\n", (uint32_t)bh.bfileSize);
-    printf("%u\n", (uint32_t)bh.bfReserved);
-    printf("%u\n", (uint32_t)bh.bOffBits);
-    printf("%u\n", (uint32_t)bh.biSize);
-    printf("%u\n", (uint32_t)bh.biWidth);
-    printf("%u\n", (uint32_t)bh.biHeight);
-    printf("%u\n", (uint16_t)bh.biPlanes);
-    printf("%u\n", (uint16_t)bh.biBitCount);
-    printf("%u\n", (uint32_t)bh.biCompression);
-    printf("%u\n", (uint32_t)bh.biSizeImage);
-    printf("%u\n", (uint32_t)bh.biXPelsPerMeter);
-    printf("%u\n", (uint32_t)bh.biYPelsPerMeter);
-    printf("%u\n", (uint32_t)bh.biClrUsed);
-    printf("%u\n", (uint32_t)bh.biClrImportant);
-    */
-    //size_t fwrite(const void *buf, size_t size, size_t count, FILE *stream)
     size_t count = fwrite(&bh, 1,  sizeof(struct bmp_header), out);
     if (count != sizeof(struct bmp_header)){
         return WRITE_ERROR;
@@ -203,7 +164,7 @@ void writefile(const char* fileName, const struct image* image){
         fclose(file);
         return;
     }
-    enum read_status wstatus = to_bmp(file, image);
+    enum write_status wstatus = to_bmp(file, image);
     switch (wstatus){
         case WRITE_OK:{
             printf("Write's ok\n");
@@ -215,5 +176,4 @@ void writefile(const char* fileName, const struct image* image){
         }
     }
     fclose(file);
-    return;
 }
