@@ -9,7 +9,6 @@ struct pixel {
 
 struct image {
     uint64_t width, height;
-    struct pixel* data;
+    struct pixel* data
 };
-struct image create();
 #endif
