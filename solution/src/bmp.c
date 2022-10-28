@@ -35,7 +35,7 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     if (count != sizeof(struct bmp_header)){
         return READ_INVALID_HEADER;
     }
-    struct image image = create();
+    struct image image;
     image.height = bh.biHeight;
     image.width = bh.biWidth;
     image.data = malloc(sizeof(struct pixel) * bh.biHeight * bh.biWidth);
@@ -44,12 +44,12 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     int tmpwidth = image.width;
     int offset = 0;
     if ((tmpwidth * sizeof(struct pixel)) % 4 != 0){
-        int needwidth = (int) tmpwidth * sizeof(struct pixel);
+        int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
         while (needwidth % 4 != 0){
             needwidth++;
         }
 
-        offset = needwidth - (int) tmpwidth * sizeof(struct pixel);
+        offset = needwidth - (int) tmpwidth * (int) sizeof(struct pixel);
 
     }
     while (countRow < image.height){
@@ -71,15 +71,13 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     return READ_OK;
 
 }
-struct image* readfile(const char* fileName){
+void readfile(const char* fileName, struct image* img){
     FILE* file = fopen(fileName, "rb");
-    if (!file){
-        printf("File doesn't read\n");
-        exit(1);
-        return NULL;
-    }
-    struct image image = create();
-    enum read_status rstatus = from_bmp(file, &image);
+//    if (!file){
+//        printf("File doesn't read\n");
+//        exit(1);
+//    }
+    enum read_status rstatus = from_bmp(file, img);
     switch (rstatus){
         case READ_OK:{
             printf("Read's ok\n");
@@ -87,19 +85,25 @@ struct image* readfile(const char* fileName){
         }
         case READ_INVALID_SIGNATURE:{
             printf("Invalid signature\n");
+            exit(1);
             break;
         }
         case READ_INVALID_BITS:{
             printf("Invalid bits\n");
+            exit(1);
             break;
         }
         case READ_INVALID_HEADER:{
             printf("Check header\n");
+            exit(1);
             break;
+        }
+        default:{
+            printf("Unknown error");
+            exit(1);
         }
     }
     fclose(file);
-    return &image;
 }
 /*  serializer   */
 enum  write_status  {
@@ -113,12 +117,12 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
     struct image image = *img;
     int tmpwidth = image.width;
     int padding = 0;
-    if ((tmpwidth  * sizeof(struct pixel)) % 4 != 0){
-        int needwidth = (int) tmpwidth * sizeof(struct pixel);
+    if ((tmpwidth  * (int) sizeof(struct pixel)) % 4 != 0){
+        int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
         while (needwidth % 4 != 0){
             needwidth++;
         }
-        padding = needwidth - (int) tmpwidth * sizeof(struct pixel);
+        padding = needwidth - (int) tmpwidth * (int) sizeof(struct pixel);
     }
     int pixels_size = ((int) image.width * sizeof(struct pixel) + padding)*(int)image.height;
     int file_size = (int) sizeof(struct bmp_header) + pixels_size;
@@ -172,7 +176,12 @@ void writefile(const char* fileName, const struct image* image){
         }
         case WRITE_ERROR:{
             printf("Write error\n");
+            exit(1);
             break;
+        }
+        default:{
+            printf("Unknown error");
+            exit(1);
         }
     }
     fclose(file);
