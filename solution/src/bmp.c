@@ -124,7 +124,7 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
         }
         padding = needwidth - (int) tmpwidth * (int) sizeof(struct pixel);
     }
-    int pixels_size = ((int) image.width * sizeof(struct pixel) + padding)*(int)image.height;
+    int pixels_size = ((int) image.width * (int) sizeof(struct pixel) + padding)*(int)image.height;
     int file_size = (int) sizeof(struct bmp_header) + pixels_size;
     bh.bfType = 19778;
     bh.bfileSize = file_size;
