@@ -1,11 +1,5 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include "struct_image.h"
 
-struct image {
-    uint64_t width, height;
-    struct pixel* data;
-};
 struct image create(){
     //struct image* image = malloc(sizeof(struct image));
     // return *image;
