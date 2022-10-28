@@ -9,13 +9,13 @@ int main(int argc, char** argv) {
         printf("Wrong arguments");
         return 1;
     }
-    struct image img = readfile(argv[1]);
+    struct image* img = readfile(argv[1]);
     //C:\Users\user\CLionProjects\untitled\wlop-43se.bmp
     //C:\Users\user\CLionProjects\assignment-image-rotation\tester\tests\1\input.bmp
-    struct image newimg = rotate(img);
+    struct image newimg = rotate(*img);
     //for(int lol = 0; lol < 2; ++lol)
     //    newimg = rotate(newimg);
-    free(img.data);
+    free(img->data);
     //writefile("C:\\Users\\user\\CLionProjects\\assignment-image-rotation\\tester\\tests\\1\\output.bmp", &newimg);
     writefile(argv[2], &newimg);
     //open file(fopen->FILE)
