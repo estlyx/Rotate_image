@@ -1,8 +1,10 @@
-#include "struct_image.h"
+#include <stdint.h>
 
-struct image create(){
-    //struct image* image = malloc(sizeof(struct image));
-    // return *image;
-    struct image image;
-    return image;
-}
+struct pixel {
+    uint8_t b, g, r;
+};
+
+struct image {
+    uint64_t width, height;
+    struct pixel* data;
+};
