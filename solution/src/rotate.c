@@ -1,6 +1,8 @@
 #include "rotate.h"
+#include "struct_image.h"
+
 struct image rotate( struct image const source ){
-    struct image newimg = create();
+    struct image newimg;
     int w = source.width;
     int h = source.height;
     newimg.height = w;
