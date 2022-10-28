@@ -1,13 +1,11 @@
-#include <malloc.h>
-#include <stdio.h>
-#include "struct_image.h"
+#include "rotate.h"
 struct image rotate( struct image const source ){
     struct image newimg = create();
     int w = source.width;
     int h = source.height;
     newimg.height = w;
     newimg.width = h;
-    newimg.data = malloc(sizeof(struct pixel*) * w * h);
+    newimg.data = malloc(sizeof(struct pixel) * w * h);
     //printf("%zu\n", sizeof(struct pixel));
     //printf("%zu\n", sizeof(newimg.data));
     //printf("%zu\n", sizeof(source.data));
