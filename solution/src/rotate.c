@@ -3,8 +3,8 @@
 
 struct image rotate( struct image const source ){
     struct image newimg;
-    int w = source.width;
-    int h = source.height;
+    int w = (int) source.width;
+    int h = (int) source.height;
     newimg.height = w;
     newimg.width = h;
     newimg.data = malloc(sizeof(struct pixel) * w * h);
