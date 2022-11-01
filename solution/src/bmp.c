@@ -40,7 +40,7 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     image.data = malloc(sizeof(struct pixel) * bh.biHeight * bh.biWidth);
     //int fs = fseek(in, bh.bOffBits, 0);
     int countRow = 0;
-    int tmpwidth = image.width;
+    int tmpwidth = (int) image.width;
     int offset = 0;
     if ((tmpwidth * sizeof(struct pixel)) % 4 != 0){
         int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
@@ -113,7 +113,7 @@ enum  write_status  {
 enum write_status to_bmp( FILE* out, const struct image* img ){
     struct bmp_header bh;
     struct image image = *img;
-    int tmpwidth = image.width;
+    int tmpwidth = (int) image.width;
     int padding = 0;
     if ((tmpwidth  * (int) sizeof(struct pixel)) % 4 != 0){
         int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
