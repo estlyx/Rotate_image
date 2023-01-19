@@ -11,5 +11,6 @@ int main(int argc, char** argv) {
     struct image newimg = rotate(&img);
     free(img.data);
     write_file(argv[2], &newimg);
+    free(newimg.data);
     return 0;
 }
