@@ -20,7 +20,7 @@ struct bmp_header
     uint32_t  biClrImportant;
 };
 #pragma pack(pop)
-/*  deserializer   */
+
 enum read_status  {
     READ_OK = 0,
     READ_INVALID_SIGNATURE,
@@ -28,36 +28,31 @@ enum read_status  {
     READ_INVALID_HEADER
 };
 
+int count_padding(uint64_t w){
+    int tmpwidth = (int) w;
+    int padding = 0;
+    if ((tmpwidth  * (int) sizeof(struct pixel)) % 4 != 0){
+        int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
+        while (needwidth % 4 != 0){
+            needwidth++;
+        }
+        padding = needwidth - (int) tmpwidth * (int) sizeof(struct pixel);
+    }
+    return padding;
+}
+
 enum read_status from_bmp( FILE* in, struct image* img ){
     struct bmp_header bh;
     size_t count = fread(&bh, 1, sizeof(struct bmp_header), in);
     if (count != sizeof(struct bmp_header)){
         return READ_INVALID_HEADER;
     }
-    struct image image;
-    image.height = bh.biHeight;
-    image.width = bh.biWidth;
-    image.data = malloc(sizeof(struct pixel) * bh.biHeight * bh.biWidth);
-    //int fs = fseek(in, bh.bOffBits, 0);
+    struct image image = new_img(bh.biHeight, bh.biWidth);
     int countRow = 0;
     int tmpwidth = (int) image.width;
-    int offset = 0;
-    if ((tmpwidth * sizeof(struct pixel)) % 4 != 0){
-        int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
-        while (needwidth % 4 != 0){
-            needwidth++;
-        }
-
-        offset = needwidth - (int) tmpwidth * (int) sizeof(struct pixel);
-
-    }
-    while (countRow < image.height){
-        /*for (size_t i = 0; i < sizeof(image.data)/sizeof(*image.data); i++){
-            printf("%u\n", (uint8_t)image.data[i].r);
-        }*/
+    int offset = count_padding(image.width);
+    for (size_t i = countRow; i < image.height; i++){
         count = fread(image.data+countRow*tmpwidth, 1,  tmpwidth * sizeof(struct pixel), in);
-        //printf("%d\n", count);
-        //printf("%d\n", tmpwidth);
         if (count != tmpwidth * sizeof(struct pixel)){
             return READ_INVALID_BITS;
         }
@@ -66,16 +61,12 @@ enum read_status from_bmp( FILE* in, struct image* img ){
     }
 
     *img = image;
-    //free(image.data);
     return READ_OK;
 
 }
-void readfile(const char* fileName, struct image* img){
+void read_file(const char* fileName, struct image* img){
     FILE* file = fopen(fileName, "rb");
-//    if (!file){
-//        printf("File doesn't read\n");
-//        exit(1);
-//    }
+
     enum read_status rstatus = from_bmp(file, img);
     switch (rstatus){
         case READ_OK:{
@@ -114,14 +105,7 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
     struct bmp_header bh;
     struct image image = *img;
     int tmpwidth = (int) image.width;
-    int padding = 0;
-    if ((tmpwidth  * (int) sizeof(struct pixel)) % 4 != 0){
-        int needwidth = (int) tmpwidth * (int) sizeof(struct pixel);
-        while (needwidth % 4 != 0){
-            needwidth++;
-        }
-        padding = needwidth - (int) tmpwidth * (int) sizeof(struct pixel);
-    }
+    int padding = count_padding(image.width);
     int pixels_size = ((int) image.width * (int) sizeof(struct pixel) + padding)*(int)image.height;
     int file_size = (int) sizeof(struct bmp_header) + pixels_size;
     bh.bfType = 19778;
@@ -143,8 +127,7 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
     if (count != sizeof(struct bmp_header)){
         return WRITE_ERROR;
     }
-    int countRow = 0;
-    while (countRow < image.height){
+    for (size_t countRow = 0; countRow < image.height; countRow++){
         count = fwrite(image.data+countRow*tmpwidth, 1, tmpwidth * sizeof(struct pixel), out);
         if (count != tmpwidth * sizeof(struct pixel)){
             return WRITE_ERROR;
@@ -154,12 +137,11 @@ enum write_status to_bmp( FILE* out, const struct image* img ){
             uint8_t ccc = 0;
             fwrite(&ccc, 1, sizeof(uint8_t), out);
         }
-        countRow++;
     }
 
     return WRITE_OK;
 }
-void writefile(const char* fileName, const struct image* image){
+void write_file(const char* fileName, const struct image* image){
     FILE* file = fopen(fileName, "wb");
     if (!file){
         printf("File doesn't read\n");

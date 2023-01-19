@@ -11,4 +11,5 @@ struct image {
     uint64_t width, height;
     struct pixel* data;
 };
+struct image new_img(uint64_t h, uint64_t w);
 #endif

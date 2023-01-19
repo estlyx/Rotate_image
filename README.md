@@ -225,15 +225,59 @@ bmp-заголовка.
 ```
 
 - Архитектура приложения описана в предыдущем разделе. 
-- Мы предоставляем вам `Makefile`, который нужно использовать. Заголовочные файлы ищутся в `include`.
-  Ваша программа будет тестироваться с помощью `clang` и проверяться
-  статическим анализатором `clang-tidy`.  Флаги и формат его запуска можно
-  посмотреть
-  [тут](https://gitlab.se.ifmo.ru/low-level-programming/docker-c-test-machine/-/blob/master/to-docker-image/run-checks.sh).
-  Тесты запускаются в
-  [Docker-контейнере](https://gitlab.se.ifmo.ru/low-level-programming/docker-c-test-machine/),
-  вы можете использовать его для тестирования вашего кода локально.
-  Скрипт `run-tests` запускает тесты.
+- Код размещается в директории `solution/src`, заголовочные файлы ищутся в `solution/include`.
+
+## Система сборки и тестирования
+
+Для сборки кода вам предоставлена система сборки на языке CMake, самим писать систему сборки не требуется.
+
+- В зависимости от платформы и компилятора, система сборки поддерживает несколько конфигураций с динамическими
+  анализаторами (санитайзерами). Санитайзеры могут дать подробную информацию о возможных и реальных ошибках в
+  программе вместо классического сообщения о segmentation fault. Выбрать подходящую конфигурацию вы можете с
+  помощью переменной `CMAKE_BUILD_TYPE`:
+
+  - `ASan` &mdash; [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html),
+    набор проверок на некорректное использование адресов памяти. Примеры:
+    use-after-free, double-free, выход за пределы стека, кучи или статического блока.
+
+  - `LSan` &mdash; [LeakSanitizer](https://clang.llvm.org/docs/LeakSanitizer.html),
+    проверки на утечки памяти.
+
+  - `MSan` &mdash; [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html),
+    проверяет, что любая используемая ячейка памяти проинициализирована на момент чтения из нее.
+
+  - `UBSan` &mdash; [UndefinedBehaviourSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html),
+    набор базовых проверок на неопределенное поведение. Примеры: переполнение численного типа,
+    null-pointer dereference.
+
+- Если в вашей системе имеется статический анализатор `clang-tidy`, он будет запущен во время компиляции программы.
+  Список проверок описан в файле `clang-tidy-checks.txt`. Вы можете добавить свои проверки в конец этого файла.
+
+- Директория `tester` содержит код и изображения для тестирования вашей программы. Для запуска тестов используется CTest.
+
+- Поддержана интеграция системы сборки со средами разработки CLion, Visual Studio и Visual Studio Code.
+
+Чтобы система сборки работала на вашей системе, вам необходимо:
+
+### Linux и MacOS
+
+- Компилятор (`gcc`/`clang`) и `cmake` (проверьте, что `cmake` версии 3.12 или выше)
+- Если вы хотите использовать санитайзеры с GCC, установите `libasan`, `liblsan` и `libubsan` с помощью пакетного менеджера (названия могут отличаться).
+- Если вы хотите использовать санитайзеры с Clang, на некоторых системах вам может понадобиться пакет `compiler-rt`.
+- Если вы хотите пользоваться `clang-tidy`, установите `clang-tools-extra`.
+
+### Windows
+
+- Какая-либо среда разработки (CLion, Visual Studio, Visual Studio Code)
+- Если вы хотите пользоваться `clang-tidy`, скачайте LLVM: https://github.com/llvm/llvm-project/releases (найдите установщик win64 под одной из версий)
+- Для VS Code требуется отдельно поставить Visual Studio (с сайта Microsoft) и CMake: https://cmake.org/download/
+
+### Инструкции по сборке и тестированию
+
+- [Работа с терминалом](docs/Terminal.md)
+- [CLion](docs/CLion.md)
+- [Visual Studio](docs/Visual%20Studio.md)
+- [Visual Studio Code](docs/VSCode.md)
 
 # Для самопроверки
 
