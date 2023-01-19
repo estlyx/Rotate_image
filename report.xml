@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="3"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="0"
+	timestamp="2023-01-19T15:49:48"
+	>
+	<testcase name="test-1" classname="test-1" time="0.0847195" status="run">
+		<system-out></system-out>
+	</testcase>
+	<testcase name="test-2" classname="test-2" time="0.0752741" status="run">
+		<system-out></system-out>
+	</testcase>
+	<testcase name="test-3" classname="test-3" time="0.0377126" status="run">
+		<system-out></system-out>
+	</testcase>
+</testsuite>
